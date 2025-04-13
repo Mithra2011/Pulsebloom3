@@ -1,12 +1,9 @@
 import streamlit as st
-import pyttsx3
+from gtts import gTTS
 import speech_recognition as sr
 from deepface import DeepFace
 import tempfile
 import os
-
-# Setup text-to-speech engine
-engine = pyttsx3.init()
 
 # Plant image map based on emotion
 plant_map = {
@@ -46,8 +43,12 @@ if st.button("Tap to Speak"):
             emotion = "neutral"
 
         st.image(plant_map[emotion], caption=f"Your emotion: {emotion.capitalize()}")
-        engine.say(f"You sound {emotion}. Let your plant bloom.")
-        engine.runAndWait()
+
+        # Convert text to speech using gTTS
+        tts = gTTS(f"You sound {emotion}. Let your plant bloom.")
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+            tts.save(fp.name)
+            st.audio(fp.name, format='audio/mp3')
 
     except sr.UnknownValueError:
         st.error("Sorry, I couldn't understand you.")
