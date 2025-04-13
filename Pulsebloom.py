@@ -1,56 +1,37 @@
 import streamlit as st
 from gtts import gTTS
-import speech_recognition as sr
-from deepface import DeepFace
 import tempfile
-import os
 
-# Plant image map based on emotion
+st.set_page_config(page_title="PulseBloom - Emotional Garden", page_icon="🌱")
+st.title("PulseBloom: Your Emotional Garden")
+st.write("Type how you’re feeling, and your emotional garden will grow!")
+
 plant_map = {
     "happy": "https://cdn.pixabay.com/photo/2016/11/23/15/36/sunflower-1853323_960_720.jpg",
     "sad": "https://cdn.pixabay.com/photo/2017/06/20/21/36/flower-2420074_960_720.jpg",
     "angry": "https://cdn.pixabay.com/photo/2018/06/26/19/31/cactus-3502487_960_720.jpg",
-    "surprise": "https://cdn.pixabay.com/photo/2020/01/22/19/49/flower-4785616_960_720.jpg",
-    "fear": "https://cdn.pixabay.com/photo/2016/07/19/22/02/dark-1528308_960_720.jpg",
     "neutral": "https://cdn.pixabay.com/photo/2020/08/25/11/24/plant-5515931_960_720.jpg"
 }
 
-st.title("PulseBloom: The Emotional Garden")
-st.write("This app uses your **voice** to detect emotion and grows a plant reflecting how you feel.")
+# Text input
+user_input = st.text_input("How are you feeling today?", "")
 
-# Voice input + emotion processing
-if st.button("Tap to Speak"):
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.write("Listening... Speak now!")
-        audio = recognizer.listen(source, timeout=5)
+if st.button("Grow My Plant!") and user_input:
+    text = user_input.lower()
+    if "happy" in text:
+        emotion = "happy"
+    elif "sad" in text:
+        emotion = "sad"
+    elif "angry" in text:
+        emotion = "angry"
+    else:
+        emotion = "neutral"
 
-    try:
-        text = recognizer.recognize_google(audio)
-        st.success(f"You said: {text}")
-        # Fake emotion detection for demo
-        if any(word in text.lower() for word in ["happy", "great", "fun"]):
-            emotion = "happy"
-        elif any(word in text.lower() for word in ["sad", "tired", "down"]):
-            emotion = "sad"
-        elif any(word in text.lower() for word in ["angry", "mad", "frustrated"]):
-            emotion = "angry"
-        elif any(word in text.lower() for word in ["surprised", "wow", "what"]):
-            emotion = "surprise"
-        elif any(word in text.lower() for word in ["scared", "afraid", "fear"]):
-            emotion = "fear"
-        else:
-            emotion = "neutral"
+    st.image(plant_map[emotion], caption=f"Your plant is feeling {emotion} today.")
 
-        st.image(plant_map[emotion], caption=f"Your emotion: {emotion.capitalize()}")
-
-        # Convert text to speech using gTTS
-        tts = gTTS(f"You sound {emotion}. Let your plant bloom.")
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-            tts.save(fp.name)
-            st.audio(fp.name, format='audio/mp3')
-
-    except sr.UnknownValueError:
-        st.error("Sorry, I couldn't understand you.")
-    except sr.RequestError:
-        st.error("Speech Recognition service error.")
+    # Generate audio
+    response = f"You sound {emotion}. Your garden is growing beautifully."
+    tts = gTTS(response)
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+        tts.save(fp.name)
+        st.audio(fp.name, format="audio/mp3")
